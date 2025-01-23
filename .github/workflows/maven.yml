@@ -32,7 +32,9 @@ jobs:
       run: |
         mvn -B package --file pom.xml
         ls -al
+        cd target
         pwd
+        
 
         
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
