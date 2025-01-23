@@ -35,6 +35,12 @@ jobs:
         cd target
         ls -al
         pwd
+
+    - name: uploading jar file as a artifact
+      uses: actions/upload-artifact@v4
+      with:
+        path:
+          /home/runner/work/simple-java-maven-app/simple-java-maven-app/target/*.jar
         
 
         
