@@ -33,7 +33,7 @@ jobs:
         mvn -B package --file pom.xml
         
         cd target
-        la -al
+        ls -al
         pwd
         
 
