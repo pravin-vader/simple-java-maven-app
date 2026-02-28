@@ -4,19 +4,65 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
 trigger:
-- master
+- main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
-steps:
-- task: Maven@4
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.17'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
+stages:
+
+# =========================
+# 1️⃣ COMPILE STAGE
+# =========================
+- stage: Compile
+  displayName: "Compile Stage"
+  jobs:
+  - job: CompileJob
+    steps:
+    - task: Maven@4
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'clean compile'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.17'
+        jdkArchitectureOption: 'x64'
+
+# =========================
+# 2️⃣ TEST STAGE
+# =========================
+- stage: Test
+  displayName: "Test Stage"
+  dependsOn: Compile
+  jobs:
+  - job: TestJob
+    steps:
+    - task: Maven@4
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'test'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.17'
+        jdkArchitectureOption: 'x64'
+
+# =========================
+# 3️⃣ PACKAGE STAGE
+# =========================
+- stage: Package
+  displayName: "Package Stage"
+  dependsOn: Test
+  condition: succeeded()
+  jobs:
+  - job: PackageJob
+    steps:
+    - task: Maven@4
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'package -DskipTests'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.17'
+        jdkArchitectureOption: 'x64'
+
+    - publish: $(System.DefaultWorkingDirectory)/target
+      artifact: drop
